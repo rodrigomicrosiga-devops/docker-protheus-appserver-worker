@@ -1,35 +1,41 @@
-name: CD - Build & Push AppServer Worker
+name: Docker Build & Push AppServer Worker to Docker Hub
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch: # Permite disparar o build manualmente pelo painel do GitHub
+      - develop
+    paths-ignore:
+      - 'README.md'
+      - '.gitignore'
 
 jobs:
   build-and-push:
-    runs-on: ubuntu-latest
+    name: Build and Push AppServer Worker Image on Local Infrastructure
+    runs-on: self-hosted # 🔑 Utiliza o seu Runner Local para ter acesso ao disco
 
     steps:
-      - name: 📂 Checkout do Repositório
+      - name: Checkout do Código
         uses: actions/checkout@v4
 
-      - name: 🐋 Configurar Docker Buildx (Mecanismo de Cache)
-        uses: docker/setup-buildx-action@v3
+      # 📦 Busca o arquivo binário localmente sem poluir o repositório Git
+      - name: Resgatar Instaladores Proprietários no Workspace
+        run: |
+          cp ../../appserver.tar.gz . 2>/dev/null || cp "${{ github.workspace }}/../appserver.tar.gz" . 2>/dev/null || cp /media/rodrigo/dados/docker-protheus-appserver/appserver.tar.gz .
 
-      - name: 🔑 Autenticar no Docker Hub
+      - name: Log in to Docker Hub
         uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: ⚡ Build and Push (appserver-dev-worker)
-        uses: docker/build-push-action@v5
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
           push: true
-          tags: |
-            rodrigomicrosiga/appserver-dev-worker:24.3.1.5
-          cache-from: type=gha # Utiliza o cache nativo do GitHub Actions
-          cache-to: type=gha,mode=max
+          tags: rodrigomicrosiga/appserver-dev-worker:24.3.1.5 # 🏷️ Nova nomenclatura padronizada

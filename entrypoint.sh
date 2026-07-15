@@ -101,3 +101,5 @@ else
     echo "❌ Modo inválido recebido no command do Compose: Escolha 'worker' ou 'compile'."
     exit 1
 fi
+
+# Force rebuild CI: $(date +%s)

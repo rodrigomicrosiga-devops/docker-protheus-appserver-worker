@@ -67,4 +67,4 @@ RUN chmod +x /usr/local/bin/entrypoint.sh \
              /totvs/protheus/bin/appserver/appsrvlinux
 
 WORKDIR /totvs/protheus/bin/appserver
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]# Trigger: 2026-07-15 09:19:34

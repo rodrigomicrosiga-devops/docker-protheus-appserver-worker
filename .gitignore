@@ -1,5 +1,5 @@
 # Bloquear binários pesados da TOTVS
-appserver.tar.gz
+*.TAR.GZ
 
 # Logs locais de teste
 *.log

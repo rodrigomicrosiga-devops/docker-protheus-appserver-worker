@@ -30,7 +30,7 @@ if [ -d "$PATCH_DIR" ] && find "$PATCH_DIR" -maxdepth 1 -type f -name "*.ptm" | 
         # Chamada CLI Nativa sem amarras de logs internos ocultos
         ./appsrvlinux -compile -applypatch -files="$patch_file" -env="$ENVIRONMENT"
 
-        echo "✅ Patch [${PATCH_NAME}] aplicado com sucesso!"
+        echo "✅ Patch [${PATCH_NAME}] applied com sucesso!"
         mkdir -p "$PATCH_DIR/applied"
         mv "$patch_file" "$PATCH_DIR/applied/"
     done

@@ -12,16 +12,42 @@ on:
 jobs:
   build-and-push:
     name: Build and Push AppServer Worker Image on Local Infrastructure
-    runs-on: self-hosted # 🔑 Utiliza o seu Runner Local para ter acesso ao disco
+    runs-on: self-hosted
 
     steps:
       - name: Checkout do Código
         uses: actions/checkout@v4
 
-      # 📦 Busca o arquivo binário localmente sem poluir o repositório Git
+      # 🚀 Resgata o pacote de forma dinâmica e tolera variações de caixa alta/baixa no nome
       - name: Resgatar Instaladores Proprietários no Workspace
         run: |
-          cp ../../appserver.tar.gz . 2>/dev/null || cp "${{ github.workspace }}/../appserver.tar.gz" . 2>/dev/null || cp /media/rodrigo/dados/docker-protheus-appserver/appserver.tar.gz .
+          echo "🔍 Procurando arquivos do AppServer nos caminhos conhecidos..."
+          
+          # Ativa a opção nullglob para que os asteriscos não expandidos não quebrem o shell
+          shopt -s nullglob
+          
+          # Array com as tentativas de busca ordenadas por prioridade (Curinga case-insensitive para APPSERVER)
+          CANDIDATOS=(
+            ../../*[aA][pP][pP][sS][eE][rR][vV][eE][rR]*.[tT][aA][rR].[gG][zZ]
+            "${{ github.workspace }}/../"*[aA][pP][pP][sS][eE][rR][vV][eE][rR]*.[tT][aA][rR].[gG][zZ]
+            /media/rodrigo/dados/docker-protheus-appserver/*[aA][pP][pP][sS][eE][rR][vV][eE][rR]*.[tT][aA][rR].[gG][zZ]
+          )
+          
+          COPIADO=false
+          for ARQUIVO in "${CANDIDATOS[@]}"; do
+            if [ -f "$ARQUIVO" ]; then
+              echo "✅ Arquivo encontrado em: $ARQUIVO"
+              cp "$ARQUIVO" .
+              COPIADO=true
+              break
+            fi
+          done
+          
+          if [ "$COPIADO" = false ]; then
+            echo "❌ ERRO: O arquivo compactado do AppServer não foi localizado em nenhum dos diretórios mapeados!"
+            echo "Certifique-se de que o arquivo (.TAR.GZ) está em /media/rodrigo/dados/docker-protheus-appserver/ ou no nível acima do projeto."
+            exit 1
+          fi
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
@@ -38,4 +64,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: rodrigomicrosiga/appserver-dev-worker:24.3.1.5 # 🏷️ Nova nomenclatura padronizada
+          tags: rodrigomicrosiga/appserver-dev-worker:24.3.1.5

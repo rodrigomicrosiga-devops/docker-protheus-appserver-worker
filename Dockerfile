@@ -61,10 +61,15 @@ COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY patch_deployer.sh /usr/local/bin/patch_deployer.sh
 COPY code_compiler.sh /usr/local/bin/code_compiler.sh
 
-RUN chmod +x /usr/local/bin/entrypoint.sh \
-             /usr/local/bin/patch_deployer.sh \
-             /usr/local/bin/code_compiler.sh \
-             /totvs/protheus/bin/appserver/appsrvlinux
+# 🚀 HIGIENIZAÇÃO FORÇADA DE INFRAESTRUTURA:
+# Purifica os scripts eliminando quebras de linha Windows, caracteres BOM e ajusta permissões
+RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh /usr/local/bin/patch_deployer.sh /usr/local/bin/code_compiler.sh \
+    && sed -i '1s/^\xef\xbb\xbf//' /usr/local/bin/entrypoint.sh \
+    && sed -i '1c\#!/bin/bash' /usr/local/bin/entrypoint.sh \
+    && chmod +x /usr/local/bin/entrypoint.sh \
+                 /usr/local/bin/patch_deployer.sh \
+                 /usr/local/bin/code_compiler.sh \
+                 /totvs/protheus/bin/appserver/appsrvlinux
 
 WORKDIR /totvs/protheus/bin/appserver
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]# Trigger: 2026-07-15 09:19:34
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

@@ -28,6 +28,17 @@ echo "✅ Conectividade com DbAccess e License Server estabelecida!"
 # 2. Garante a árvore mínima necessária dentro dos volumes persistidos
 mkdir -p /totvs/protheus/system /totvs/protheus/log /totvs/protheus/apo/aporollback /totvs/protheus/patches_queue
 
+# 📂 2.1. PROVISIONAMENTO DO TOTVS PRINTER (Sidecar)
+# Copia o executável do volume compartilhado para a pasta binária para suportar relatórios em background
+if [ -f "/tmp/printer_shared/printer" ]; then
+    echo "🖨️ [DevOps] Copiando executável TOTVS Printer para a pasta binária..."
+    mkdir -p /totvs/protheus/bin/appserver
+    cp /tmp/printer_shared/printer /totvs/protheus/bin/appserver/
+    chmod +x /totvs/protheus/bin/appserver/printer
+else
+    echo "⚠️  [DevOps] Aviso: Executável printer não localizado em /tmp/printer_shared/"
+fi
+
 # 3. Renderização dinâmica do appserver.ini
 cd /totvs/protheus/bin/appserver
 echo "📝 Gerando appserver.ini dinâmico para o modo [${ROLE^^}]..."

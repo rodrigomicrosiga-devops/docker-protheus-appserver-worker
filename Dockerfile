@@ -62,6 +62,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # 🌟 Adições para resolver o erro do XCB Shape e Fixes:
     libxcb-shape0 \
     libxcb-xfixes0 \
+    # 🌟 Adição para resolver a quebra de input e renderizadores complementares:
+    libxcb-xinput0 \
+    libxcb-randr0 \
+    libxcb-shm0 \
+    libxcb-sync1 \
     && echo "pt_BR.UTF-8 UTF-8" > /etc/locale.gen && locale-gen \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*

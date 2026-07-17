@@ -62,7 +62,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     # 🌟 Adições para resolver o erro do XCB Shape e Fixes:
     libxcb-shape0 \
     libxcb-xfixes0 \
-    # 🌟 Adição para resolver a quebra de input e renderizadores complementares:
+    # 🌟 Adição de bibliotecas complementares:
     libxcb-xinput0 \
     libxcb-randr0 \
     libxcb-shm0 \

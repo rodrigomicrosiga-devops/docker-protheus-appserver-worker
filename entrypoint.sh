@@ -4,6 +4,10 @@ set -e
 ROLE=$(echo "$1" | tr '[:upper:]' '[:lower:]')
 echo "=== [AppServer-Worker] Inicializando Modo Especialista: [${ROLE^^}] ==="
 
+# 0. Eleva o limite de arquivos abertos do processo (ver mesma nota no
+# entrypoint.sh do docker-protheus-appserver).
+ulimit -n 65536 2>/dev/null || echo "⚠️  Não foi possível elevar o limite de arquivos abertos (soft/hard limit do ambiente já está no teto)."
+
 # Mapeamento dinâmico das variáveis globais injetadas pelo Docker Compose
 PORT=${APP_PORT_MULTI:-5000}
 LICENSE_HOST=${LICENSE_SERVER:-protheus_license}

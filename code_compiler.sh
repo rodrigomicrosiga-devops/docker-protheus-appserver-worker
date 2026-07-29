@@ -11,11 +11,42 @@ OUTREPORT_DIR="/tmp/outreport/"
 FILE_ERROR="${OUTREPORT_DIR}compile_errors.log"
 FILE_SUCCESS="${OUTREPORT_DIR}compile_success.log"
 
-# Includes consolidados nas pastas lógicas montadas do host (modelo do
-# worker real: volumes já montados diretamente, sem extração de .zip —
-# diferente da versão morta em docker-protheus-appserver, que extraía
-# includes.zip em /tmp; aqui não há esse zip, então mantém-se o mount).
-INCLUDE_PATHS="/totvs/protheus/includes/advpl;/totvs/protheus/includes/tlpp;/totvs/protheus/includes/custom"
+# 📦 EXTRAÇÃO REAL DOS INCLUDES (obrigatória -- ver nota abaixo)
+#
+# Cada volume de includes (advpl/tlpp/custom) traz só um includes.zip, não
+# os .ch/.th soltos. Testado e confirmado ao vivo: o appsrvlinux até
+# consegue abrir o arquivo de topo (ex.: protheus.ch) direto de dentro do
+# zip, mas a resolução de #include ANINHADO dentro desse mesmo zip é
+# case-sensitive -- protheus.ch referencia "PRTOPDEF.CH" (maiúsculo) e o
+# membro real no zip é "prtopdef.ch" (minúsculo), então falha com
+# "File not found PRTOPDEF.CH" mesmo com o pacote de includes íntegro.
+# Em um diretório real extraído, o mesmo arquivo minúsculo resolve sem
+# problema -- a tratativa de maiúsculo/minúsculo do compilador existe,
+# mas só se aplica a diretórios reais, não a leitura direta de zip.
+EXTRACT_ROOT="/tmp/includes_extracted"
+rm -rf "$EXTRACT_ROOT"
+INCLUDE_PATHS=""
+for SRC in advpl tlpp custom; do
+    ZIP_FILE="/totvs/protheus/includes/${SRC}/includes.zip"
+    DEST_DIR="${EXTRACT_ROOT}/${SRC}"
+    mkdir -p "$DEST_DIR"
+    if [ -f "$ZIP_FILE" ]; then
+        echo "📂 Extraindo includes [${SRC}] para área isolada do container..."
+        # unzip retorna 1 (não-fatal) pro aviso de separador "\" dos
+        # pacotes da TOTVS -- mesma tolerância já usada nos entrypoints
+        # das imagens seed (rpo/system/systemload).
+        set +e
+        unzip -oq "$ZIP_FILE" -d "$DEST_DIR"
+        UNZIP_RC=$?
+        set -e
+        if [ "$UNZIP_RC" -gt 1 ]; then
+            echo "❌ ERRO CRÍTICO: Falha real ao extrair ${ZIP_FILE} (rc=${UNZIP_RC})!"
+            exit 1
+        fi
+    fi
+    INCLUDE_PATHS="${INCLUDE_PATHS}${DEST_DIR};"
+done
+INCLUDE_PATHS="${INCLUDE_PATHS%;}"
 
 echo "=== [Protheus-Compiler] Inicializando Esteira de Compilação GitOps (.LST) ==="
 
@@ -77,7 +108,7 @@ if [ "$ERROR" -ne 0 ] || { [ -f "${FILE_ERROR}" ] && [ -s "${FILE_ERROR}" ]; }; 
     fi
 
     rm -f "$LIST_FILE"
-    rm -rf "$OUTREPORT_DIR"
+    rm -rf "$OUTREPORT_DIR" "$EXTRACT_ROOT"
     exit 1
 else
     echo "***************************************************"
@@ -95,6 +126,6 @@ else
 fi
 
 rm -f "$LIST_FILE"
-rm -rf "$OUTREPORT_DIR"
+rm -rf "$OUTREPORT_DIR" "$EXTRACT_ROOT"
 echo "=== [Protheus-Compiler] Processo GitOps Encerrado ==="
 exit 0

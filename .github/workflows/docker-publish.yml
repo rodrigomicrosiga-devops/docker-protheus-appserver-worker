@@ -64,6 +64,6 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: rodrigomicrosiga/appserver-dev-worker:24.3.1.5
+          tags: rodrigomicrosiga/appserver-dev-worker:24.3.1.9
           labels: |
             org.opencontainers.image.revision=${{ github.sha }}

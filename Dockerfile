@@ -26,8 +26,8 @@ RUN strip --strip-unneeded appserver/appsrvlinux 2>/dev/null || true
 # ==============================================================================
 FROM debian:bookworm-slim AS runner
 LABEL maintainer="Rodrigo dos Santos Brandão <rodrigomicrosiga>"
-LABEL version="24.3.1.5"
-LABEL description="TOTVS AppServer Worker 24.3.1.5 - Ultra Light"
+LABEL version="24.3.1.9"
+LABEL description="TOTVS AppServer Worker 24.3.1.9 - Ultra Light"
 
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=pt_BR.UTF-8 \

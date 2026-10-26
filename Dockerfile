@@ -25,9 +25,12 @@ RUN strip --strip-unneeded appserver/appsrvlinux 2>/dev/null || true
 # ESTÁGIO 2: Runner (Imagem Enxuta e Especialista)
 # ==============================================================================
 FROM debian:bookworm-slim AS runner
+# Versão do componente: vem do construtor (build-arg), sem valor padrão para não rotular a imagem errada.
+ARG APPSERVER_VERSION
+RUN test -n "${APPSERVER_VERSION}" || { echo "ERRO: passe --build-arg APPSERVER_VERSION=<versão>" >&2; exit 1; }
 LABEL maintainer="Rodrigo dos Santos Brandão <rodrigomicrosiga>"
-LABEL version="24.3.1.9"
-LABEL description="TOTVS AppServer Worker 24.3.1.9 - Ultra Light"
+LABEL version="${APPSERVER_VERSION}"
+LABEL description="TOTVS AppServer Worker ${APPSERVER_VERSION} - Ultra Light"
 
 ENV DEBIAN_FRONTEND=noninteractive \
     LANG=pt_BR.UTF-8 \
